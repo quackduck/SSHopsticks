@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gliderlabs/ssh"
@@ -133,7 +134,40 @@ func SshHandler(s ssh.Session) {
 }
 
 func DoTurn(curr *Player, other *Player) error {
-	fromLeft := GetLeftRight(curr.input("From which hand? (left, right): "))
+	whatKind := curr.input("From which hand (or split)? (left, right, split): ")
+
+	if whatKind == "split" {
+		fromLeft := GetLeftRight(curr.input("From which hand? (left, right): "))
+		lols, err := strconv.Atoi(curr.input("How many? "))
+
+		if err != nil {
+			return err
+		}
+
+		if lols < 0 {
+			return fmt.Errorf("naughtry boy")
+		}
+
+		if fromLeft {
+			if lols+curr.left >= 5 {
+				return fmt.Errorf("naughtry boy")
+			}
+
+			curr.right += lols
+			curr.left -= lols
+		} else {
+			if lols+curr.right >= 5 {
+				return fmt.Errorf("naughtry boy")
+			}
+
+			curr.left += lols
+			curr.right -= lols
+		}
+
+		return nil
+	}
+
+	fromLeft := GetLeftRight(whatKind)
 	toLeft := GetLeftRight(curr.input("To which hand? (left, right): "))
 
 	if fromLeft {
@@ -165,6 +199,7 @@ func GameLoop() {
 
 		err := DoTurn(curr, other)
 		if err != nil {
+			fmt.Println(err)
 			continue
 		}
 
