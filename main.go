@@ -170,20 +170,14 @@ func DoTurn(curr *Player, other *Player) error {
 	fromLeft := GetLeftRight(whatKind)
 	toLeft := GetLeftRight(curr.input("To which hand? (left, right): "))
 
+	if (toLeft && other.left == 0) || (!toLeft && other.right == 0) {
+		return fmt.Errorf("NAUGTHTY NAUGHTY BOY")
+	}
+
 	if fromLeft {
-		if other.left != 0 {
-			other.AddToHand(curr.left, toLeft)
-		} else {
-			curr.output("You can't do that")
-			return fmt.Errorf("no")
-		}
+		other.AddToHand(curr.left, toLeft)
 	} else {
-		if other.right != 0 {
-			other.AddToHand(curr.right, toLeft)
-		} else {
-			curr.output("STOP!!!!!!")
-			return fmt.Errorf("no")
-		}
+		other.AddToHand(curr.right, toLeft)
 	}
 
 	return nil
