@@ -29,8 +29,8 @@ func (this *Player) DetectLose() bool {
 }
 
 func DisplayState(p1 *Player, p2 *Player) {
-	fmt.Println("Player 1's hand:", p1.left, p1.right)
-	fmt.Println("Player 2's hand:", p2.left, p2.right)
+	fmt.Println(p1.name+"'s hand:", p1.left, p1.right)
+	fmt.Println(p2.name+"'s hand:", p2.left, p2.right)
 	fmt.Println("----------------------\n")
 }
 
@@ -45,8 +45,18 @@ func GetLeftRight(input string) bool {
 	}
 }
 
+var (
+	scanner = bufio.NewScanner(os.Stdin)
+)
+
+func input() string {
+	scanner.Scan()
+	return strings.TrimSpace(scanner.Text())
+}
+
 func main() {
-	p1 := &Player{"Player 1", 1, 1}
+	fmt.Print("Enter your name: ")
+	p1 := &Player{input(), 1, 1}
 	p2 := &Player{"Player 2", 1, 1}
 
 	fmt.Println("Da Chopsticks Game Starts:")
@@ -76,8 +86,6 @@ func main() {
 		}
 	}()
 
-	scanner := bufio.NewScanner(os.Stdin)
-
 	DisplayState(p1, p2)
 
 	curr := p1
@@ -86,11 +94,9 @@ func main() {
 	for !(other.DetectLose() || curr.DetectLose()) {
 
 		fmt.Print(curr.name + "'s turn\nFrom which hand? (left, right): ")
-		scanner.Scan()
-		fromLeft := GetLeftRight(strings.TrimSpace(scanner.Text()))
+		fromLeft := GetLeftRight(input())
 		fmt.Print("To which hand? (left, right): ")
-		scanner.Scan()
-		toLeft := GetLeftRight(strings.TrimSpace(scanner.Text()))
+		toLeft := GetLeftRight(input())
 
 		if fromLeft {
 			other.AddToHand(curr.left, toLeft)
