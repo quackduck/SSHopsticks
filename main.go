@@ -204,7 +204,7 @@ func GameLoop() {
 
 		err := DoTurn(curr, other)
 		if err != nil {
-			fmt.Println(err)
+			curr.output(err.Error())
 			continue
 		}
 
