@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gliderlabs/ssh"
+	markdown "github.com/quackduck/go-term-markdown"
 	terminal "github.com/quackduck/term"
 )
 
@@ -32,13 +33,46 @@ func (this *Player) DetectLose() bool {
 	return this.left == 0 && this.right == 0
 }
 
-func DisplayState(p1 *Player, p2 *Player) {
-	state := fmt.Sprintln("----------------------") +
-		fmt.Sprintln(p1.name+"'s hand:", p1.left, p1.right) +
-		fmt.Sprintln(p2.name+"'s hand:", p2.left, p2.right) +
-		fmt.Sprintln("----------------------")
-	fmt.Println(state)
-	termPrintln(state)
+func DisplayState(curr *Player, other *Player) {
+	// state := fmt.Sprintln("----------------------") +
+	// 	fmt.Sprintln(p1.name+"'s hand:", p1.left, p1.right) +
+	// 	fmt.Sprintln(p2.name+"'s hand:", p2.left, p2.right) +
+	// 	fmt.Sprintln("----------------------\n")
+
+	curr.output(stateAs(curr, other))
+	other.output(stateAs(other, curr))
+}
+
+func stateAs(curr *Player, other *Player) string {
+	return other.name + "'s hand" + showFingers(other.left, false) + showFingers(other.right, false) + "\n" + curr.name + "'s hand" + showFingers(curr.left, true) + showFingers(curr.right, true)
+}
+
+func showFingers(num int, up bool) string {
+	fSplit := strings.Split(finger, "\n")
+	if !up {
+		fSplit = strings.Split(downFinger, "\n")
+	}
+	ret := ""
+	// fmt.Println(fSplit)
+	for i := 0; i < len(fSplit); i++ {
+		if i == len(fSplit)-10 { // magic number, do not change.
+			break
+		}
+		for j := 0; j < num; j++ {
+			ret += fSplit[i]
+		}
+		ret += "\n"
+	}
+	return ret
+}
+
+func reverseString(s string) string {
+	a := []byte(s)
+	for i, j := 0, len(s)-1; i < j; i++ {
+		a[i], a[j] = a[j], a[i]
+		j--
+	}
+	return string(a)
 }
 
 func GetLeftRight(input string) bool {
@@ -53,10 +87,12 @@ func GetLeftRight(input string) bool {
 }
 
 var (
-	scanner    = bufio.NewScanner(os.Stdin)
-	term       *terminal.Terminal
-	w          ssh.Window
-	upsideDown = "https://cloud-lvtf5ds2i-hack-club-bot.vercel.app/0image.png"
+	scanner = bufio.NewScanner(os.Stdin)
+	term    *terminal.Terminal
+	w       ssh.Window
+
+	downFinger = string(markdown.Render("![lol](https://cloud-lvtf5ds2i-hack-club-bot.vercel.app/0image.png)", 10, 0))
+	finger     = string(markdown.Render("![lol](https://cloud-6zj0ryec6-hack-club-bot.vercel.app/0finger.png)", 10, 0))
 )
 
 func input(prompt string) string {
@@ -134,7 +170,7 @@ func main() {
 		} else {
 			other.AddToHand(curr.right, toLeft)
 		}
-		DisplayState(p1, p2)
+		DisplayState(curr, other)
 		curr, other = other, curr
 	}
 }
