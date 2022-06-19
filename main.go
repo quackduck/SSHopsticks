@@ -84,11 +84,13 @@ func main() {
 		pty, winChan, _ := s.Pty()
 		w := pty.Window
 		_ = term.SetSize(w.Width, w.Height)
+
 		go func() {
 			for w = range winChan {
 				_ = term.SetSize(w.Width, w.Height)
 			}
 		}()
+
 		term.SetPrompt("Enter name: ")
 		line, err := term.ReadLine()
 		if err != nil {
