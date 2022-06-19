@@ -80,7 +80,7 @@ func main() {
 	})
 
 	go func() {
-		err := ssh.ListenAndServe(":2222", nil, ssh.HostKeyFile(os.Getenv("HOME")+"/.ssh/id_rsa"))
+		err := ssh.ListenAndServe(":2155", nil, ssh.HostKeyFile(os.Getenv("HOME")+"/.ssh/id_rsa"))
 		if err != nil {
 			fmt.Println(err)
 		}
