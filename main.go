@@ -32,9 +32,11 @@ func (this *Player) DetectLose() bool {
 }
 
 func DisplayState(p1 *Player, p2 *Player) {
-	state := fmt.Sprintln(p1.name+"'s hand:", p1.left, p1.right) +
+	
+	state := fmt.Sprintln("----------------------") +
+		fmt.Sprintln(p1.name+"'s hand:", p1.left, p1.right) +
 		fmt.Sprintln(p2.name+"'s hand:", p2.left, p2.right) +
-		fmt.Sprintln("----------------------\n")
+		fmt.Sprintln("----------------------")
 	fmt.Println(state)
 	termPrintln(state)
 }
@@ -104,6 +106,7 @@ func main() {
 	if port == "" {
 		port = "2155"
 	}
+	fmt.Println("Please get the other player to ssh to port: " + port)
 
 	go func() {
 		err := ssh.ListenAndServe(fmt.Sprintf(":%s", port), nil, ssh.HostKeyFile(os.Getenv("HOME")+"/.ssh/id_rsa"))
