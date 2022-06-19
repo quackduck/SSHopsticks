@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/gliderlabs/ssh"
 	terminal "github.com/quackduck/term"
 )
@@ -36,7 +37,15 @@ func DisplayState(p1 *Player, p2 *Player) {
 	state := fmt.Sprintln("----------------------") +
 		fmt.Sprintln(p1.name+"'s hand:", p1.left, p1.right) +
 		fmt.Sprintln(p2.name+"'s hand:", p2.left, p2.right) +
+<<<<<<< HEAD
 		fmt.Sprintln("----------------------")
+=======
+		fmt.Sprintln("----------------------\n")
+
+	res := string(markdown.Render("![lol](https://cloud-6zj0ryec6-hack-club-bot.vercel.app/0finger.png)", w.Width/10, 0))
+	fmt.Println(res)
+
+>>>>>>> ad96fca3a3f763c81eb72303dabd1366ed3b9f7f
 	fmt.Println(state)
 	termPrintln(state)
 }
@@ -55,6 +64,7 @@ func GetLeftRight(input string) bool {
 var (
 	scanner = bufio.NewScanner(os.Stdin)
 	term    *terminal.Terminal
+	w       ssh.Window
 )
 
 func input(prompt string) string {
@@ -88,8 +98,9 @@ func main() {
 	ssh.Handle(func(s ssh.Session) {
 		term = terminal.NewTerminal(s, "> ")
 		pty, winChan, _ := s.Pty()
-		w := pty.Window
+		w = pty.Window
 		_ = term.SetSize(w.Width, w.Height)
+
 		go func() {
 			for w = range winChan {
 				_ = term.SetSize(w.Width, w.Height)
