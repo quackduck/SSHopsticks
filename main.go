@@ -29,9 +29,11 @@ func (this *Player) DetectLose() bool {
 }
 
 func DisplayState(p1 *Player, p2 *Player) {
-	fmt.Println(p1.name+"'s hand:", p1.left, p1.right)
-	fmt.Println(p2.name+"'s hand:", p2.left, p2.right)
-	fmt.Println("----------------------\n")
+	state := fmt.Sprintln(p1.name+"'s hand:", p1.left, p1.right) +
+		fmt.Sprintln(p2.name+"'s hand:", p2.left, p2.right) +
+		fmt.Sprintln("----------------------\n")
+	fmt.Println(state)
+	termPrintln(state)
 }
 
 func GetLeftRight(input string) bool {
@@ -47,11 +49,16 @@ func GetLeftRight(input string) bool {
 
 var (
 	scanner = bufio.NewScanner(os.Stdin)
+	term    *terminal.Terminal
 )
 
 func input() string {
 	scanner.Scan()
 	return strings.TrimSpace(scanner.Text())
+}
+
+func termPrintln(s string) {
+	term.Write([]byte(s + "\n"))
 }
 
 func main() {
@@ -61,8 +68,10 @@ func main() {
 
 	fmt.Println("Da Chopsticks Game Starts:")
 
+	gameReadyChan := make(chan bool)
+
 	ssh.Handle(func(s ssh.Session) {
-		term := terminal.NewTerminal(s, "> ")
+		term = terminal.NewTerminal(s, "> ")
 		pty, winChan, _ := s.Pty()
 		w := pty.Window
 		_ = term.SetSize(w.Width, w.Height)
@@ -71,14 +80,14 @@ func main() {
 				_ = term.SetSize(w.Width, w.Height)
 			}
 		}()
-		term.Write([]byte("hello world! enter smth\n"))
+		term.SetPrompt("Enter name: ")
 		line, err := term.ReadLine()
 		if err != nil {
 			fmt.Println(err)
 		}
-		term.Write([]byte("You said " + line))
+		p2.name = line
+		gameReadyChan <- true
 	})
-
 	go func() {
 		err := ssh.ListenAndServe(":2155", nil, ssh.HostKeyFile(os.Getenv("HOME")+"/.ssh/id_rsa"))
 		if err != nil {
@@ -86,13 +95,14 @@ func main() {
 		}
 	}()
 
+	<-gameReadyChan
+
 	DisplayState(p1, p2)
 
 	curr := p1
 	other := p2
 
 	for !(other.DetectLose() || curr.DetectLose()) {
-
 		fmt.Print(curr.name + "'s turn\nFrom which hand? (left, right): ")
 		fromLeft := GetLeftRight(input())
 		fmt.Print("To which hand? (left, right): ")
