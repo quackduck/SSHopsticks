@@ -56,7 +56,7 @@ var (
 	scanner    = bufio.NewScanner(os.Stdin)
 	term       *terminal.Terminal
 	w          ssh.Window
-	upsideDown = "https://cloud-cjaykvk5l-hack-club-bot.vercel.app/0screen_shot_2022-06-19_at_15.18.42.png"
+	upsideDown = "https://cloud-lvtf5ds2i-hack-club-bot.vercel.app/0image.png"
 )
 
 func input(prompt string) string {
