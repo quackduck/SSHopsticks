@@ -34,11 +34,6 @@ func (this *Player) DetectLose() bool {
 }
 
 func DisplayState(curr *Player, other *Player) {
-	// state := fmt.Sprintln("----------------------") +
-	// 	fmt.Sprintln(p1.name+"'s hand:", p1.left, p1.right) +
-	// 	fmt.Sprintln(p2.name+"'s hand:", p2.left, p2.right) +
-	// 	fmt.Sprintln("----------------------\n")
-
 	curr.output(stateAs(curr, other))
 	other.output(stateAs(other, curr))
 }
@@ -68,15 +63,6 @@ func showFingers(num int, num2 int, up bool) string {
 		ret += "\n"
 	}
 	return ret
-}
-
-func reverseString(s string) string {
-	a := []byte(s)
-	for i, j := 0, len(s)-1; i < j; i++ {
-		a[i], a[j] = a[j], a[i]
-		j--
-	}
-	return string(a)
 }
 
 func GetLeftRight(input string) bool {
