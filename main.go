@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
 	"github.com/gliderlabs/ssh"
+	terminal "github.com/quackduck/term"
 )
 
 type Player struct {
@@ -52,11 +52,25 @@ func main() {
 	fmt.Println("Da Chopsticks Game Starts:")
 
 	ssh.Handle(func(s ssh.Session) {
-		io.WriteString(s, "Hello world\n")
+		term := terminal.NewTerminal(s, "> ")
+		pty, winChan, _ := s.Pty()
+		w := pty.Window
+		_ = term.SetSize(w.Width, w.Height)
+		go func() {
+			for w = range winChan {
+				_ = term.SetSize(w.Width, w.Height)
+			}
+		}()
+		term.Write([]byte("hello world! enter smth\n"))
+		line, err := term.ReadLine()
+		if err != nil {
+			fmt.Println(err)
+		}
+		term.Write([]byte("You said " + line))
 	})
 
 	go func() {
-		err := ssh.ListenAndServe(":2222", nil)
+		err := ssh.ListenAndServe(":2222", nil, ssh.HostKeyFile(os.Getenv("HOME")+"/.ssh/id_rsa"))
 		if err != nil {
 			fmt.Println(err)
 		}
