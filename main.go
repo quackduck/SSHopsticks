@@ -79,8 +79,13 @@ func main() {
 		term.Write([]byte("You said " + line))
 	})
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "2155"
+	}
+
 	go func() {
-		err := ssh.ListenAndServe(":2155", nil, ssh.HostKeyFile(os.Getenv("HOME")+"/.ssh/id_rsa"))
+		err := ssh.ListenAndServe(fmt.Sprintf(":%s", port), nil, ssh.HostKeyFile(os.Getenv("HOME")+"/.ssh/id_rsa"))
 		if err != nil {
 			fmt.Println(err)
 		}
