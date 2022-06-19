@@ -211,6 +211,15 @@ func GameLoop() {
 		DisplayState(curr, other)
 		curr, other = other, curr
 	}
+
+	if other.DetectLoss() {
+		curr.output("you win")
+		other.output(curr.name + " wins!")
+		return
+	}
+
+	curr.output(other.name + " wins!")
+	other.output("you winnnnnnnnnnn!")
 }
 
 func ServeSsh(port string) {
