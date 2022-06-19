@@ -148,6 +148,9 @@ func DoTurn(curr *Player, other *Player) error {
 			return fmt.Errorf("naughtry boy")
 		}
 
+		prevLeft := curr.left
+		prevRight := curr.right
+
 		if fromLeft {
 			if lols+curr.right >= 5 {
 				return fmt.Errorf("naughtry boy")
@@ -162,6 +165,11 @@ func DoTurn(curr *Player, other *Player) error {
 
 			curr.left += lols
 			curr.right -= lols
+		}
+
+		if prevLeft == curr.right && prevRight == curr.left {
+			curr.left, curr.right = prevLeft, prevRight
+			return fmt.Errorf("NOOOOO NAUGHTY")
 		}
 
 		return nil
