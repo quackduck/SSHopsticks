@@ -96,6 +96,8 @@ func main() {
 		}
 		p2.name = line
 		gameReadyChan <- true
+		for {
+		}
 	})
 
 	port := os.Getenv("PORT")
