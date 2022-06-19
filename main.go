@@ -167,8 +167,10 @@ func main() {
 	for !(other.DetectLose() || curr.DetectLose()) {
 		curr.output("your turn")
 		other.output(curr.name + "'s turn...")
+
 		fromLeft := GetLeftRight(curr.input("From which hand? (left, right): "))
 		toLeft := GetLeftRight(curr.input("To which hand? (left, right): "))
+
 		if fromLeft {
 			if other.left != 0 {
 				other.AddToHand(curr.left, toLeft)
@@ -184,6 +186,7 @@ func main() {
 				continue
 			}
 		}
+
 		DisplayState(curr, other)
 		curr, other = other, curr
 	}
