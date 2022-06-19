@@ -44,10 +44,10 @@ func DisplayState(curr *Player, other *Player) {
 }
 
 func stateAs(curr *Player, other *Player) string {
-	return other.name + "'s hand" + showFingers(other.left, false) + showFingers(other.right, false) + "\n" + curr.name + "'s hand" + showFingers(curr.left, true) + showFingers(curr.right, true)
+	return other.name + "'s hand" + showFingers(other.left, other.right, false) + "\n" + curr.name + "'s hand" + showFingers(curr.left, curr.right, true)
 }
 
-func showFingers(num int, up bool) string {
+func showFingers(num int, num2 int, up bool) string {
 	fSplit := strings.Split(finger, "\n")
 	if !up {
 		fSplit = strings.Split(downFinger, "\n")
@@ -59,6 +59,10 @@ func showFingers(num int, up bool) string {
 			break
 		}
 		for j := 0; j < num; j++ {
+			ret += fSplit[i]
+		}
+		ret += "       "
+		for j := 0; j < num2; j++ {
 			ret += fSplit[i]
 		}
 		ret += "\n"
