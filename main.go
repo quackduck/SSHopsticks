@@ -37,7 +37,7 @@ func DisplayState(p1 *Player, p2 *Player) {
 		fmt.Sprintln(p2.name+"'s hand:", p2.left, p2.right) +
 		fmt.Sprintln("----------------------\n")
 
-	res := string(markdown.Render("![lol](./finger.png)", 80, 6))
+	res := string(markdown.Render("![lol](./finger.png)", w.Width, w.Height))
 	fmt.Println(res)
 
 	fmt.Println(state)
@@ -58,6 +58,7 @@ func GetLeftRight(input string) bool {
 var (
 	scanner = bufio.NewScanner(os.Stdin)
 	term    *terminal.Terminal
+	w       ssh.Window
 )
 
 func input(prompt string) string {
@@ -87,7 +88,7 @@ func main() {
 	ssh.Handle(func(s ssh.Session) {
 		term = terminal.NewTerminal(s, "> ")
 		pty, winChan, _ := s.Pty()
-		w := pty.Window
+		w = pty.Window
 		_ = term.SetSize(w.Width, w.Height)
 
 		go func() {
