@@ -3,8 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
+
+	"github.com/gliderlabs/ssh"
 )
 
 type Player struct {
@@ -47,6 +50,17 @@ func main() {
 	p2 := &Player{"Player 2", 1, 1}
 
 	fmt.Println("Da Chopsticks Game Starts:")
+
+	ssh.Handle(func(s ssh.Session) {
+		io.WriteString(s, "Hello world\n")
+	})
+
+	go func() {
+		err := ssh.ListenAndServe(":2222", nil)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 
 	scanner := bufio.NewScanner(os.Stdin)
 
