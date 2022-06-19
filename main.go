@@ -170,9 +170,19 @@ func main() {
 		fromLeft := GetLeftRight(curr.input("From which hand? (left, right): "))
 		toLeft := GetLeftRight(curr.input("To which hand? (left, right): "))
 		if fromLeft {
-			other.AddToHand(curr.left, toLeft)
+			if other.left != 0 {
+				other.AddToHand(curr.left, toLeft)
+			} else {
+				curr.output("You can't do that")
+				continue
+			}
 		} else {
-			other.AddToHand(curr.right, toLeft)
+			if other.right != 0 {
+				other.AddToHand(curr.right, toLeft)
+			} else {
+				curr.output("STOP!!!!!!")
+				continue
+			}
 		}
 		DisplayState(curr, other)
 		curr, other = other, curr
