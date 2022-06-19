@@ -11,6 +11,21 @@ import (
 	terminal "github.com/quackduck/term"
 )
 
+var (
+	scanner = bufio.NewScanner(os.Stdin)
+
+	term *terminal.Terminal
+	w    ssh.Window
+
+	downFinger = string(markdown.Render("![lol](https://cloud-lvtf5ds2i-hack-club-bot.vercel.app/0image.png)", 10, 0))
+	finger     = string(markdown.Render("![lol](https://cloud-6zj0ryec6-hack-club-bot.vercel.app/0finger.png)", 10, 0))
+
+	gameReadyChan = make(chan bool)
+
+	p1 = &Player{input("Enter your name: "), 1, 1, input, stdPrintln}
+	p2 = &Player{"p2", 1, 1, termInput, termPrintln}
+)
+
 type Player struct {
 	name  string
 	left  int
@@ -21,7 +36,6 @@ type Player struct {
 	output func(string)
 }
 
-// AddToHand adds chopsticks to this player's hand. If isLeft == true, it adds to the left hand. Otherwise, it adds it to the right hand.
 func (this *Player) AddToHand(n int, isLeft bool) {
 	if isLeft {
 		this.left = (this.left + n) % 5
@@ -29,7 +43,7 @@ func (this *Player) AddToHand(n int, isLeft bool) {
 		this.right = (this.right + n) % 5
 	}
 }
-func (this *Player) DetectLose() bool {
+func (this *Player) DetectLoss() bool {
 	return this.left == 0 && this.right == 0
 }
 
@@ -39,7 +53,10 @@ func DisplayState(curr *Player, other *Player) {
 }
 
 func stateAs(curr *Player, other *Player) string {
-	return other.name + "'s hand" + showFingers(other.left, other.right, false) + "\n" + curr.name + "'s hand" + showFingers(curr.left, curr.right, true)
+	return other.name + "'s hand" +
+		showFingers(other.left, other.right, false) +
+		"\n" + curr.name + "'s hand" +
+		showFingers(curr.left, curr.right, true)
 }
 
 func showFingers(num int, num2 int, up bool) string {
@@ -48,7 +65,7 @@ func showFingers(num int, num2 int, up bool) string {
 		fSplit = strings.Split(downFinger, "\n")
 	}
 	ret := ""
-	// fmt.Println(fSplit)
+
 	for i := 0; i < len(fSplit); i++ {
 		if i == len(fSplit)-10 { // magic number, do not change.
 			break
@@ -62,6 +79,7 @@ func showFingers(num int, num2 int, up bool) string {
 		}
 		ret += "\n"
 	}
+
 	return ret
 }
 
@@ -75,15 +93,6 @@ func GetLeftRight(input string) bool {
 		return false
 	}
 }
-
-var (
-	scanner = bufio.NewScanner(os.Stdin)
-	term    *terminal.Terminal
-	w       ssh.Window
-
-	downFinger = string(markdown.Render("![lol](https://cloud-lvtf5ds2i-hack-club-bot.vercel.app/0image.png)", 10, 0))
-	finger     = string(markdown.Render("![lol](https://cloud-6zj0ryec6-hack-club-bot.vercel.app/0finger.png)", 10, 0))
-)
 
 func input(prompt string) string {
 	fmt.Print(prompt)
@@ -105,75 +114,90 @@ func termInput(prompt string) string {
 	return line
 }
 
-func main() {
-	p1 := &Player{input("Enter your name: "), 1, 1, input, stdPrintln}
-	p2 := &Player{"p2", 1, 1, termInput, termPrintln} // name gets changed later
-
-	fmt.Println("Da Chopsticks Game Starts:")
-
-	gameReadyChan := make(chan bool)
-
-	ssh.Handle(func(s ssh.Session) {
-		term = terminal.NewTerminal(s, "> ")
-		pty, winChan, _ := s.Pty()
-		w = pty.Window
-		_ = term.SetSize(w.Width, w.Height)
-
-		go func() {
-			for w = range winChan {
-				_ = term.SetSize(w.Width, w.Height)
-			}
-		}()
-		p2.name = termInput("Enter your name: ")
-		gameReadyChan <- true
-		for {
-		}
-	})
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "2155"
-	}
-	fmt.Println("Please get the other player to ssh to port: " + port)
+func SshHandler(s ssh.Session) {
+	term = terminal.NewTerminal(s, "> ")
+	pty, winChan, _ := s.Pty()
+	w = pty.Window
+	_ = term.SetSize(w.Width, w.Height)
 
 	go func() {
-		err := ssh.ListenAndServe(fmt.Sprintf(":%s", port), nil, ssh.HostKeyFile(os.Getenv("HOME")+"/.ssh/id_rsa"))
-		if err != nil {
-			fmt.Println(err)
+		for w = range winChan {
+			_ = term.SetSize(w.Width, w.Height)
 		}
 	}()
 
-	<-gameReadyChan
+	p2.name = termInput("Enter your name: ")
+	gameReadyChan <- true
+	for {
+	}
+}
 
-	DisplayState(p1, p2)
+func DoTurn(curr *Player, other *Player) error {
+	fromLeft := GetLeftRight(curr.input("From which hand? (left, right): "))
+	toLeft := GetLeftRight(curr.input("To which hand? (left, right): "))
 
+	if fromLeft {
+		if other.left != 0 {
+			other.AddToHand(curr.left, toLeft)
+		} else {
+			curr.output("You can't do that")
+			return fmt.Errorf("no")
+		}
+	} else {
+		if other.right != 0 {
+			other.AddToHand(curr.right, toLeft)
+		} else {
+			curr.output("STOP!!!!!!")
+			return fmt.Errorf("no")
+		}
+	}
+
+	return nil
+}
+
+func GameLoop() {
 	curr := p1
 	other := p2
 
-	for !(other.DetectLose() || curr.DetectLose()) {
+	for !(other.DetectLoss() || curr.DetectLoss()) {
 		curr.output("your turn")
 		other.output(curr.name + "'s turn...")
 
-		fromLeft := GetLeftRight(curr.input("From which hand? (left, right): "))
-		toLeft := GetLeftRight(curr.input("To which hand? (left, right): "))
-
-		if fromLeft {
-			if other.left != 0 {
-				other.AddToHand(curr.left, toLeft)
-			} else {
-				curr.output("You can't do that")
-				continue
-			}
-		} else {
-			if other.right != 0 {
-				other.AddToHand(curr.right, toLeft)
-			} else {
-				curr.output("STOP!!!!!!")
-				continue
-			}
+		err := DoTurn(curr, other)
+		if err != nil {
+			continue
 		}
 
 		DisplayState(curr, other)
 		curr, other = other, curr
 	}
+}
+
+func ServeSsh(port string) {
+	hostKey := ssh.HostKeyFile(os.Getenv("HOME") + "/.ssh/id_rsa")
+
+	err := ssh.ListenAndServe(fmt.Sprintf(":%s", port), nil, hostKey)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+}
+
+func main() {
+	fmt.Println("Da Chopsticks Game Starts:")
+	ssh.Handle(SshHandler)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "2155"
+	}
+
+	fmt.Println("Please get the other player to ssh to port: " + port)
+
+	go ServeSsh(port)
+	<-gameReadyChan
+
+	DisplayState(p1, p2)
+	GameLoop()
 }
