@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	markdown "github.com/MichaelMure/go-term-markdown"
 	"github.com/gliderlabs/ssh"
 	terminal "github.com/quackduck/term"
 )
@@ -35,6 +36,10 @@ func DisplayState(p1 *Player, p2 *Player) {
 	state := fmt.Sprintln(p1.name+"'s hand:", p1.left, p1.right) +
 		fmt.Sprintln(p2.name+"'s hand:", p2.left, p2.right) +
 		fmt.Sprintln("----------------------\n")
+
+	res := string(markdown.Render("![lol](./finger.png)", 80, 6))
+	fmt.Println(res)
+
 	fmt.Println(state)
 	termPrintln(state)
 }
