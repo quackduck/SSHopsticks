@@ -37,7 +37,7 @@ func DisplayState(p1 *Player, p2 *Player) {
 		fmt.Sprintln(p2.name+"'s hand:", p2.left, p2.right) +
 		fmt.Sprintln("----------------------\n")
 
-	res := string(markdown.Render("![lol](./finger.png)", w.Width/10, 0))
+	res := string(markdown.Render("![lol](https://cloud-6zj0ryec6-hack-club-bot.vercel.app/0finger.png)", w.Width/10, 0))
 	fmt.Println(res)
 
 	fmt.Println(state)
