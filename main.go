@@ -14,6 +14,9 @@ type Player struct {
 	name  string
 	left  int
 	right int
+
+	// takes a prompt, returns input
+	input func(string) string
 }
 
 // AddToHand adds chopsticks to this player's hand. If isLeft == true, it adds to the left hand. Otherwise, it adds it to the right hand.
@@ -52,7 +55,8 @@ var (
 	term    *terminal.Terminal
 )
 
-func input() string {
+func input(prompt string) string {
+	fmt.Print(prompt)
 	scanner.Scan()
 	return strings.TrimSpace(scanner.Text())
 }
@@ -61,10 +65,15 @@ func termPrintln(s string) {
 	term.Write([]byte(s + "\n"))
 }
 
+func termInput(prompt string) string {
+	term.SetPrompt(prompt)
+	line, _ := term.ReadLine()
+	return line
+}
+
 func main() {
-	fmt.Print("Enter your name: ")
-	p1 := &Player{input(), 1, 1}
-	p2 := &Player{"Player 2", 1, 1}
+	p1 := &Player{input("Enter your name: "), 1, 1, input}
+	p2 := &Player{"p2", 1, 1, termInput} // name gets changed later
 
 	fmt.Println("Da Chopsticks Game Starts:")
 
@@ -109,11 +118,8 @@ func main() {
 	other := p2
 
 	for !(other.DetectLose() || curr.DetectLose()) {
-		fmt.Print(curr.name + "'s turn\nFrom which hand? (left, right): ")
-		fromLeft := GetLeftRight(input())
-		fmt.Print("To which hand? (left, right): ")
-		toLeft := GetLeftRight(input())
-
+		fromLeft := GetLeftRight(curr.input(curr.name + "'s turn\nFrom which hand? (left, right): "))
+		toLeft := GetLeftRight(curr.input("To which hand? (left, right): "))
 		if fromLeft {
 			other.AddToHand(curr.left, toLeft)
 		} else {
